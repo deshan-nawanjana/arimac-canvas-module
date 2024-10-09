@@ -27,10 +27,6 @@ const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2()
 
-// tween for part animations
-const topTween = new Tween()
-const bottomTween = new Tween()
-
 // method to simplify index
 const simplifyIndex = index => {
   // get items length
@@ -42,7 +38,7 @@ const simplifyIndex = index => {
 // method to load diamond models
 const loadDiamonds = async () => {
   // load diamond model
-  const model = await new FBXLoader().loadAsync("./models/diamond_v3.fbx")
+  const model = await new FBXLoader().loadAsync("./models/diamond_v4.fbx")
   // load diamond texture
   const textures = [
     await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
@@ -110,9 +106,27 @@ const loadDiamonds = async () => {
     item.model = diamond
     // create tween for model
     item.tween = new Tween()
+    // create float tween
+    item.floatTween = new Tween()
     // set index on model
     item.model.full.index = i
     item.model.full.color = item.color
+    // create wrap group
+    item.wrap = new THREE.Object3D()
+    // remove children from model
+    item.model.add(diamond.top)
+    item.model.add(diamond.bottom)
+    item.model.add(diamond.full)
+    // add children to wrap
+    item.wrap.add(diamond.top)
+    item.wrap.add(diamond.bottom)
+    item.wrap.add(diamond.full)
+    // add wrap to model
+    item.model.add(item.wrap)
+    // set initial wrap position
+    item.wrap.position.y = item.float
+    // set initial float direction
+    item.wrap.direction = "up"
   }
   // return diamonds array
   return items.map(item => item.model)
@@ -138,20 +152,24 @@ const onInit = async (setIndex, setSelected) => {
   scene.add(...loadLights())
   // relocate camera
   camera.position.z = 5.8
+  // current time stamp
+  let currentTime = performance.now()
   // animate scene
-  renderer.setAnimationLoop(() => {
+  renderer.setAnimationLoop(time => {
     // for each item
     for (let i = 0; i < items.length; i++) {
       // current item
       const item = items[i]
       // update tween
       item.tween.update()
+      item.floatTween.update()
     }
-    // update part tween
-    topTween.update()
-    bottomTween.update()
+    // update float animation
+    onFloat(time - currentTime)
     // render scene
     renderer.render(scene, camera)
+    // update current time
+    currentTime = time
   })
   // mouse click event
   window.addEventListener("click", event => {
@@ -201,6 +219,29 @@ const onResize = () => {
   renderer.setSize(width, height)
   // update camera position by width
   camera.position.z = 5.4
+}
+
+// method to float diamonds
+const onFloat = delta => {
+  // return if selected
+  if (selectedIndex !== null) { return }
+  // for each item
+  for (let i = 0; i < items.length; i++) {
+    // current item wrap
+    const wrap = items[i].wrap
+    // check direction
+    if (wrap.direction === "up") {
+      wrap.position.y += 0.001 * delta
+      if (wrap.position.y > 0.5) {
+        wrap.direction = "down"
+      }
+    } else {
+      wrap.position.y -= 0.001 * delta
+      if (wrap.position.y < -0.5) {
+        wrap.direction = "up"
+      }
+    }
+  }
 }
 
 // method to rotate diamonds
