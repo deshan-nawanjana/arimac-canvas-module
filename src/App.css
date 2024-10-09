@@ -1,6 +1,7 @@
 body {
   margin: 0;
   overflow: hidden;
+  user-select: none;
 }
 
 .app-container {
@@ -19,4 +20,14 @@ body {
   line-height: 30vh;
   padding-top: 70vh;
   text-align: center;
+}
+
+.close-button {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: 600;
+  position: fixed;
+  width: 120px;
+  height: 40px;
+  left: calc(50vw - 60px);
+  top: 40px;
 }

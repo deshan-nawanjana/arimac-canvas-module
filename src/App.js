@@ -10,30 +10,32 @@ export default function App() {
   const [ready, setReady] = useState(false)
   // current diamond index
   const [index, setIndex] = useState(0)
+  // diamond selected state
+  const [selected, setSelected] = useState(false)
+  // method to next diamond
+  const onNext = () => {
+    setIndex(index === diamondCount - 1 ? 0 : index + 1)
+  }
+  // method to previous diamond
+  const onPrevious = () => {
+    setIndex(index === 0 ? diamondCount - 1 : index - 1)
+  }
   // wheel event listener
   const onWheel = event => {
-    // return if not ready
-    if (!ready) { return }
-    // check wheel direction
-    if (event.deltaY > 0) {
-      // increase index
-      setIndex(index === diamondCount - 1 ? 0 : index + 1)
-    } else {
-      // decrease index
-      setIndex(index === 0 ? diamondCount - 1 : index - 1)
-    }
+    // return if not ready or selected
+    if (!ready || selected) { return }
+    // rotate by wheel direction
+    if (event.deltaY > 0) { onNext() } else { onPrevious() }
   }
   // key down event listener
   const onKeyDown = event => {
-    // return if not ready
-    if (!ready) { return }
-    // check wheel direction
+    // return if not ready or selected
+    if (!ready || selected) { return }
+    // rotate by key code
     if (event.key === "PageDown") {
-      // increase index
-      setIndex(index === diamondCount - 1 ? 0 : index + 1)
+      onNext()
     } else if (event.key === "PageUp") {
-      // decrease index
-      setIndex(index === 0 ? diamondCount - 1 : index - 1)
+      onPrevious()
     }
   }
   return (
@@ -47,10 +49,29 @@ export default function App() {
         setReady={setReady}
         index={index}
         setIndex={setIndex}
+        selected={selected}
+        setSelected={setSelected}
       />
       <div className="content-container">
+        {
+          selected && (
+            <button
+              className="close-button"
+              onClick={() => setSelected(false)}>
+              Close Diamond
+            </button>
+          )
+        }
         <div className="overlay-text">
-          Overlay Text : Index ({index})
+          {
+            ready ? (
+              <span>
+                Overlay Text : Index ({index}) {
+                  selected && " + SELECTED"
+                }
+              </span>
+            ) : "Loading..."
+          }
         </div>
       </div>
     </div>
