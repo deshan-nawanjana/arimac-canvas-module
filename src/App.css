@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+.app-container {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100vw;
+  height: 100vh;
+  outline: none;
+}
+
+.overlay-text {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 30vh;
+  padding-top: 70vh;
+  text-align: center;
+}
