@@ -38,7 +38,7 @@ const simplifyIndex = index => {
 // method to load diamond models
 const loadDiamonds = async () => {
   // load diamond model
-  const model = await new FBXLoader().loadAsync("./models/diamond_v4.fbx")
+  const model = await new FBXLoader().loadAsync("./models/diamond_v5.fbx")
   // load diamond texture
   const textures = [
     await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
