@@ -20,12 +20,12 @@ const loadDiamonds = async () => {
   const model = await new FBXLoader().loadAsync("./models/diamond.fbx")
   // load reflection texture
   const texture = await new THREE.CubeTextureLoader().loadAsync([
-    "./models/diamond.jpg",
-    "./models/diamond.jpg",
-    "./models/diamond.jpg",
-    "./models/diamond.jpg",
-    "./models/diamond.jpg",
-    "./models/diamond.jpg"
+    "./models/diamond_hdr.jpg",
+    "./models/diamond_hdr.jpg",
+    "./models/diamond_hdr.jpg",
+    "./models/diamond_hdr.jpg",
+    "./models/diamond_hdr.jpg",
+    "./models/diamond_hdr.jpg"
   ])
   // set model scale
   model.scale.set(0.15, 0.15, 0.15)
