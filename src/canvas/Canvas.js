@@ -44,7 +44,17 @@ const loadDiamonds = async () => {
   // load diamond model
   const model = await new FBXLoader().loadAsync("./models/diamond_v3.fbx")
   // load diamond texture
-  const texture = await new THREE.TextureLoader().loadAsync("./models/diamond_v4.png")
+  const textures = [
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_blue.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_green.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_blue.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_green.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_blue.png"),
+    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_green.png")
+  ]
   // load reflection texture
   const envTexture = await new THREE.CubeTextureLoader().loadAsync([
     "./models/skybox_v2.png",
@@ -66,14 +76,14 @@ const loadDiamonds = async () => {
     diamond.traverse(child => {
       // update model material
       child.material = new THREE.MeshPhysicalMaterial({
-        map: texture,
+        map: textures[i] || textures[0],
         envMap: envTexture,
         color: new THREE.Color("#FFFFFF"),
         metalness: 0,
         roughness: 0.01,
         transparent: true,
         opacity: 1,
-        transmission: 0.5,
+        transmission: 0.3,
         reflectivity: 1,
         clearcoat: 1,
         clearcoatRoughness: 0.05,
@@ -190,7 +200,7 @@ const onResize = () => {
   camera.updateProjectionMatrix()
   renderer.setSize(width, height)
   // update camera position by width
-  camera.position.z = 5.8
+  camera.position.z = 5.4
 }
 
 // method to rotate diamonds
