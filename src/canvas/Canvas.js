@@ -18,8 +18,15 @@ const renderer = new THREE.WebGLRenderer({ alpha: true })
 const loadDiamonds = async () => {
   // load diamond model
   const model = await new FBXLoader().loadAsync("./models/diamond.fbx")
-  // load diamond texture
-  const texture = await new THREE.TextureLoader().loadAsync("./models/diamond.jpg")
+  // load reflection texture
+  const texture = await new THREE.CubeTextureLoader().loadAsync([
+    "./models/diamond.jpg",
+    "./models/diamond.jpg",
+    "./models/diamond.jpg",
+    "./models/diamond.jpg",
+    "./models/diamond.jpg",
+    "./models/diamond.jpg"
+  ])
   // set model scale
   model.scale.set(0.15, 0.15, 0.15)
   // for each item
@@ -28,15 +35,30 @@ const loadDiamonds = async () => {
     const item = items[i]
     // clone diamond model
     const diamond = model.clone(true)
+    // traverse model children
+    diamond.traverse(child => {
+      // update model material
+      child.material = new THREE.MeshPhysicalMaterial({
+        envMap: texture,
+        color: new THREE.Color(0x999999),
+        metalness: 0.2,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0.85,
+        transmission: 0.9,
+        ior: 2.4,
+        reflectivity: 1,
+        clearcoat: 1,
+        clearcoatRoughness: 0.05,
+        side: THREE.DoubleSide
+      });
+      // setup shadows
+      child.castShadow = true
+      child.receiveShadow = true
+    })
     // locate and rotate diamond
     diamond.position.set(...Object.values(item.anchor.position))
     diamond.rotation.set(...Object.values(item.anchor.rotation))
-    // create model material
-    diamond.children[0].material = new THREE.MeshPhongMaterial({
-      map: texture,
-      color: new THREE.Color("#FFF"),
-      transparent: true
-    })
     // set model on item
     item.model = diamond
     // create tween for model
@@ -98,17 +120,13 @@ const onResize = () => {
   camera.updateProjectionMatrix()
   renderer.setSize(width, height)
   // update camera position by width
-  // camera.position.z = 10000 / width
   camera.position.z = 5.8
 }
 
 // method to rotate diamonds
-const rotateDiamonds = (index, onReady) => {
-  // set as not ready
-  onReady(false)
+const rotateDiamonds = index => {
   // get items length
   const length = items.length
-  const rs = []
   // for each item
   for (let i = 0; i < items.length; i++) {
     // current item
@@ -116,7 +134,6 @@ const rotateDiamonds = (index, onReady) => {
     // get modulo index and item by offset
     const offsetIndex = (((index + i) % length) + length) % length
     const offsetItem = items[offsetIndex]
-    rs.push(offsetIndex)
     // animate model
     item.tween.animateObject(item.model, offsetItem.anchor, {
       duration: 500,
@@ -131,16 +148,12 @@ const rotateDiamonds = (index, onReady) => {
         } else {
           mesh.material.opacity = 1
         }
-      },
-      onComplete() {
-        // set as ready
-        setTimeout(() => onReady(true), 10)
       }
     })
   }
 }
 
-export default function Canvas({ ready, setReady, setIndex, index }) {
+export default function Canvas({ ready, index, setReady }) {
   // effect on mount
   useEffect(() => {
     // get container element
