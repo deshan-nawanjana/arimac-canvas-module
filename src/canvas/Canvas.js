@@ -265,31 +265,31 @@ const onInit = async (setIndex, setSelected) => {
     if (result) {
       if (hoverObject && hoverObject.color_name !== result.object.color_name) {
         hoverObject.tween.animateObject(hoverObject.material, { opacity: 1 }, {
-          duration: 100,
+          duration: 300,
           easing: "out-cubic"
         })
         hoverObject.glowTween.animateObject(hoverObject.glow.material, { opacity: 0 }, {
-          duration: 100,
+          duration: 300,
           easing: "out-cubic"
         })
       }
       hoverObject = result.object
       hoverObject.tween.animateObject(hoverObject.material, { opacity: 0 }, {
-        duration: 100,
+        duration: 300,
         easing: "out-cubic"
       })
       hoverObject.glowTween.animateObject(hoverObject.glow.material, { opacity: 1 }, {
-        duration: 100,
+        duration: 300,
         easing: "out-cubic"
       })
       document.body.style.cursor = "pointer"
     } else if (hoverObject) {
       hoverObject.tween.animateObject(hoverObject.material, { opacity: 1 }, {
-        duration: 100,
+        duration: 300,
         easing: "out-cubic"
       })
       hoverObject.glowTween.animateObject(hoverObject.glow.material, { opacity: 0 }, {
-        duration: 100,
+        duration: 300,
         easing: "out-cubic"
       })
       hoverObject = null
