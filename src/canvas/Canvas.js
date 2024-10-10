@@ -126,11 +126,13 @@ const loadDiamonds = async () => {
     item.tween = new Tween()
     // create float tween
     item.floatTween = new Tween()
+    item.scaleTween = new Tween()
     // set index on model
     item.model.full.index = i
     item.model.full.color = item.color
     item.model.full.color_name = item.color_name
     item.model.full.tween = item.tween
+    item.model.full.item = item
     // create wrap group
     item.wrap = new THREE.Object3D()
     // remove children from model
@@ -201,6 +203,7 @@ const onInit = async (setIndex, setSelected) => {
       // update tween
       item.tween.update()
       item.floatTween.update()
+      item.scaleTween.update()
       item.glowTween.update()
     }
     // update galaxy tween
@@ -272,6 +275,11 @@ const onInit = async (setIndex, setSelected) => {
           duration: 300,
           easing: "out-cubic"
         })
+        const item = hoverObject.item
+        item.scaleTween.animateObject(item.model, { scale: { x: 0.15, y: 0.15, z: 0.15 } }, {
+          duration: 300,
+          easing: "out-cubic"
+        })
       }
       hoverObject = result.object
       hoverObject.tween.animateObject(hoverObject.material, { opacity: 0 }, {
@@ -282,6 +290,11 @@ const onInit = async (setIndex, setSelected) => {
         duration: 300,
         easing: "out-cubic"
       })
+      const item = result.object.item
+      item.scaleTween.animateObject(item.model, { scale: { x: 0.16, y: 0.16, z: 0.16 } }, {
+        duration: 300,
+        easing: "out-cubic"
+      })
       document.body.style.cursor = "pointer"
     } else if (hoverObject) {
       hoverObject.tween.animateObject(hoverObject.material, { opacity: 1 }, {
@@ -289,6 +302,11 @@ const onInit = async (setIndex, setSelected) => {
         easing: "out-cubic"
       })
       hoverObject.glowTween.animateObject(hoverObject.glow.material, { opacity: 0 }, {
+        duration: 300,
+        easing: "out-cubic"
+      })
+      const item = hoverObject.item
+      item.scaleTween.animateObject(item.model, { scale: { x: 0.15, y: 0.15, z: 0.15 } }, {
         duration: 300,
         easing: "out-cubic"
       })
