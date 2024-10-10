@@ -2,7 +2,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: linear-gradient(#FFFFFF, #EDEDED);
+  background-image: radial-gradient(#FFFFFF, #EDEDED);
   z-index: -1;
 }
 
@@ -11,21 +11,46 @@
   height: 100%;
   position: absolute;
   transition: opacity 0.8s;
-  background-image: url(./images/background.png);
-  background-position: center;
+  background-image: url(./images/patch.png);
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: auto 102%;
 }
 
-.canvas-container-image[data-selected="true"] {
-  opacity: 1 !important;
+.canvas-container-image.non-flipped {
+  background-position: center 8vh;
+  transform: scale(-1);
 }
 
 .canvas-container-image.flipped {
-  transform: scale(-1);
+  background-position: center -2vh;
   opacity: 0;
+}
+
+[data-selected="true"] .canvas-container-image.non-flipped {
+  opacity: 0 !important;
+}
+
+
+[data-selected="true"] .canvas-container-image.flipped {
+  opacity: 1 !important;
 }
 
 .canvas-container canvas {
   position: absolute;
+}
+
+.diamond-canvas {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 1;
+}
+
+.galaxy-canvas {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  z-index: 0;
+  opacity: 0.2;
+  filter: blur(3px);
 }

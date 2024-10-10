@@ -25,16 +25,16 @@ export default function App() {
     // return if not ready or selected
     if (!ready || selected) { return }
     // rotate by wheel direction
-    if (event.deltaY > 0) { onNext() } else { onPrevious() }
+    if (event.deltaY < 0) { onNext() } else { onPrevious() }
   }
   // key down event listener
   const onKeyDown = event => {
     // return if not ready or selected
     if (!ready || selected) { return }
     // rotate by key code
-    if (event.key === "PageDown") {
+    if (event.key === "PageUp") {
       onNext()
-    } else if (event.key === "PageUp") {
+    } else if (event.key === "PageDown") {
       onPrevious()
     }
   }

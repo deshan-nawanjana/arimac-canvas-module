@@ -1,11 +1,13 @@
 import { useEffect } from "react"
 import * as THREE from "three"
-import { FBXLoader } from "three/examples/jsm/Addons.js"
+import { FBXLoader, OrbitControls } from "three/examples/jsm/Addons.js"
 import { Tween } from "./modules/Tween"
 import items from "./objects/diamonds.json"
 import items_selected from "./objects/diamonds_selected.json"
 import item_broken from "./objects/diamond_broken.json"
 import "./Canvas.css"
+import { color, cos, float, mix, PI2, range, sin, SpriteNodeMaterial, timerLocal, uniform, uv, vec3, vec4, WebGPURenderer } from "three/webgpu"
+import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
 
 // react on states
 let stateIndex = 0
@@ -23,9 +25,15 @@ const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
 const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
 
+renderer.domElement.classList.add("diamond-canvas")
+
 // raycaster modules
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2()
+
+
+const galaxyTween = new Tween()
+
 
 // method to simplify index
 const simplifyIndex = index => {
@@ -41,15 +49,15 @@ const loadDiamonds = async () => {
   const model = await new FBXLoader().loadAsync("./models/diamond_v5.fbx")
   // load diamond texture
   const textures = [
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_blue.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_green.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_blue.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_green.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_purple.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_blue.png"),
-    await new THREE.TextureLoader().loadAsync("./models/diamond_v6_green.png")
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_01_purple.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_02_blue.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_03_dark_blue.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_04_dark_green.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_05_green.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_06_orange.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_07_red.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_08_rose.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_09_yellow.png")
   ]
   // load reflection texture
   const envTexture = await new THREE.CubeTextureLoader().loadAsync([
@@ -152,10 +160,8 @@ const onInit = async (setIndex, setSelected) => {
   scene.add(...loadLights())
   // relocate camera
   camera.position.z = 5.8
-  // current time stamp
-  let currentTime = performance.now()
   // animate scene
-  renderer.setAnimationLoop(time => {
+  renderer.setAnimationLoop(() => {
     // for each item
     for (let i = 0; i < items.length; i++) {
       // current item
@@ -164,12 +170,10 @@ const onInit = async (setIndex, setSelected) => {
       item.tween.update()
       item.floatTween.update()
     }
-    // update float animation
-    onFloat(time - currentTime)
+    // update galaxy tween
+    galaxyTween.update()
     // render scene
     renderer.render(scene, camera)
-    // update current time
-    currentTime = time
   })
   // mouse click event
   window.addEventListener("click", event => {
@@ -204,8 +208,48 @@ const onInit = async (setIndex, setSelected) => {
       setIndex(currentIndex)
     }
   }, false)
+  let hoverObject = null
+  // mouse move event
+  window.addEventListener("mousemove", event => {
+    // return if selected
+    if (selectedIndex !== null) { return }
+    // calculate points from pixel ratio
+    const x = event.clientX * window.devicePixelRatio
+    const y = event.clientY * window.devicePixelRatio
+    // update mouse vector
+    mouse.x = (x / renderer.domElement.width) * 2 - 1
+    mouse.y = -(y / renderer.domElement.height) * 2 + 1
+    // set raycaster from camera
+    raycaster.setFromCamera(mouse, camera)
+    // get input meshes
+    const inputs = items.map(item => item.model.full)
+    // get intersect objects
+    const objects = raycaster.intersectObjects(inputs)
+    // find full diamond mesh
+    const result = objects.find(item => item.object.isFullDiamond)
+    // return if no result
+    if (result) {
+      // get current index
+      const currentIndex = items.length - result.object.index
+      // check index
+      if (simplifyIndex(currentIndex) === stateIndex) {
+        if (hoverObject && hoverObject.color !== result.object) {
+          hoverObject.material.color = new THREE.Color("#FFF")
+        }
+        hoverObject = result.object
+        hoverObject.material.color = new THREE.Color(hoverObject.color)
+      }
+    } else if (hoverObject) {
+      hoverObject.material.color = new THREE.Color("#FFF")
+      hoverObject = null
+    }
+  }, false)
   // initial resize
   onResize()
+  // float diamonds
+  onFloat()
+  // galaxy animation
+  initGalaxy()
 }
 
 // method to resize
@@ -222,25 +266,29 @@ const onResize = () => {
 }
 
 // method to float diamonds
-const onFloat = delta => {
-  // return if selected
-  if (selectedIndex !== null) { return }
+const onFloat = () => {
+  const floatDown = item => {
+    item.floatTween.animateObject(item.wrap, {
+      position: { y: -0.25 }
+    }, {
+      duration: 800,
+      easing: "in-out-sine",
+      onComplete() { floatUp(item) }
+    })
+  }
+  const floatUp = item => {
+    item.floatTween.animateObject(item.wrap, {
+      position: { y: 0.25 }
+    }, {
+      duration: 800,
+      easing: "in-out-sine",
+      onComplete() { floatDown(item) }
+    })
+  }
   // for each item
   for (let i = 0; i < items.length; i++) {
-    // current item wrap
-    const wrap = items[i].wrap
-    // check direction
-    if (wrap.direction === "up") {
-      wrap.position.y += 0.001 * delta
-      if (wrap.position.y > 0.5) {
-        wrap.direction = "down"
-      }
-    } else {
-      wrap.position.y -= 0.001 * delta
-      if (wrap.position.y < -0.5) {
-        wrap.direction = "up"
-      }
-    }
+    // current item
+    setTimeout(() => floatDown(items[i]), i * 100)
   }
 }
 
@@ -308,6 +356,7 @@ const selectDiamond = (index, diamondIndex) => {
       })
     }
   }
+  galaxyUp()
 }
 
 // method to close diamond
@@ -334,6 +383,7 @@ const closeDiamond = index => {
       selectedIndex = null
     }
   })
+  galaxyDown()
 }
 
 export default function Canvas({ ready, setReady, index, setIndex, selected, setSelected }) {
@@ -376,14 +426,12 @@ export default function Canvas({ ready, setReady, index, setIndex, selected, set
   }, [selected])
   // return container
   return (
-    <div className="canvas-container">
+    <div className="canvas-container" data-selected={selected}>
       <div
-        className="canvas-container-image"
-        data-selected={selected}
+        className="canvas-container-image non-flipped"
       />
       <div
         className="canvas-container-image flipped"
-        data-selected={selected}
       />
     </div>
   )
@@ -435,5 +483,152 @@ const createObjectKeyHandler = model => {
         z: model.rotation.z
       }
     })
+  })
+}
+
+let galaxyMesh = null
+
+function initGalaxy() {
+
+  let camera, scene, renderer, controls;
+
+  function init() {
+
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 2, 8);
+
+    scene = new THREE.Scene();
+    // scene.background = new THREE.Color(0x201919);
+
+    // galaxy
+
+    const material = new SpriteNodeMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const size = uniform(0.066);
+    material.scaleNode = range(0, 1).mul(size);
+
+    const time = timerLocal(0.4);
+
+    const radiusRatio = range(0, 1);
+    const radius = radiusRatio.pow(1.5).mul(5).toVar();
+
+    const branches = 50;
+    const branchAngle = range(0, branches).floor().mul(PI2.div(branches));
+    const angle = branchAngle.add(time.mul(radiusRatio.oneMinus()));
+
+    const position = vec3(
+      cos(angle),
+      0,
+      sin(angle)
+    ).mul(radius);
+
+    const randomOffset = range(vec3(- 1), vec3(1)).pow(3).mul(radiusRatio).add(0.2);
+
+    material.positionNode = position.add(randomOffset);
+
+    const colorInside = uniform(color('#e1dddb'));
+    const colorOutside = uniform(color('#d6d6d6'));
+    const colorFinal = mix(colorInside, colorOutside, radiusRatio.oneMinus().pow(2).oneMinus());
+    const alpha = float(0.1).div(uv().sub(0.5).length()).sub(0.2);
+    material.colorNode = vec4(colorFinal, alpha);
+
+    const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), material, 20000);
+
+    mesh.rotation.set(Math.PI / 1.1, 0, 0)
+
+    galaxyMesh = mesh
+
+    scene.add(mesh);
+
+    // debug
+
+    // const gui = new GUI();
+
+    // gui.add(size, 'value', 0, 1, 0.001).name('size');
+
+    // gui.addColor({ color: colorInside.value.getHex(THREE.SRGBColorSpace) }, 'color')
+    //   .name('colorInside')
+    //   .onChange(function (value) {
+
+    //     colorInside.value.set(value);
+
+    //   });
+
+    // gui.addColor({ color: colorOutside.value.getHex(THREE.SRGBColorSpace) }, 'color')
+    //   .name('colorOutside')
+    //   .onChange(function (value) {
+
+    //     colorOutside.value.set(value);
+
+    //   });
+
+    // renderer
+
+    renderer = new WebGPURenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setAnimationLoop(animate);
+    document.body.appendChild(renderer.domElement);
+
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.minDistance = 0.1;
+    controls.maxDistance = 50;
+
+    window.addEventListener('resize', onWindowResize);
+
+    const container = document.querySelector(".canvas-container")
+
+    renderer.domElement.classList.add("galaxy-canvas")
+
+    container.appendChild(renderer.domElement)
+
+  }
+
+  function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+  }
+
+  async function animate() {
+
+    controls.update();
+
+    renderer.render(scene, camera);
+
+  }
+
+  init()
+
+}
+
+
+
+const galaxyUp = () => {
+  window.galaxyMesh = galaxyMesh
+  galaxyTween.animateObject(galaxyMesh, {
+    rotation: { x: Math.PI / 0.9 },
+    position: { y: 1.5 }
+  }, {
+    duration: 800,
+    easing: 'out-cubic'
+  })
+}
+
+const galaxyDown = () => {
+  galaxyTween.animateObject(galaxyMesh, {
+    rotation: { x: Math.PI / 1.1 },
+    position: { y: 0 }
+  }, {
+    duration: 800,
+    easing: 'out-cubic'
   })
 }
