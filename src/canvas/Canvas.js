@@ -7,7 +7,6 @@ import items_selected from "./objects/diamonds_selected.json"
 import item_broken from "./objects/diamond_broken.json"
 import "./Canvas.css"
 import { color, cos, float, mix, PI2, range, sin, SpriteNodeMaterial, timerLocal, uniform, uv, vec3, vec4, WebGPURenderer } from "three/webgpu"
-import GUI from "three/examples/jsm/libs/lil-gui.module.min.js"
 
 // react on states
 let stateIndex = 0
@@ -49,6 +48,7 @@ const loadDiamonds = async () => {
   const model = await new FBXLoader().loadAsync("./models/diamond_v5.fbx")
   // load diamond texture
   const textures = [
+    // normal textures
     await new THREE.TextureLoader().loadAsync("./textures/diamond_01_purple.png"),
     await new THREE.TextureLoader().loadAsync("./textures/diamond_02_blue.png"),
     await new THREE.TextureLoader().loadAsync("./textures/diamond_03_dark_blue.png"),
@@ -57,7 +57,17 @@ const loadDiamonds = async () => {
     await new THREE.TextureLoader().loadAsync("./textures/diamond_06_orange.png"),
     await new THREE.TextureLoader().loadAsync("./textures/diamond_07_red.png"),
     await new THREE.TextureLoader().loadAsync("./textures/diamond_08_rose.png"),
-    await new THREE.TextureLoader().loadAsync("./textures/diamond_09_yellow.png")
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_09_yellow.png"),
+    // glowing textures
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_01_purple_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_02_blue_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_03_dark_blue_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_04_dark_green_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_05_green_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_06_orange_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_07_red_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_08_rose_glow.png"),
+    await new THREE.TextureLoader().loadAsync("./textures/diamond_09_yellow_glow.png"),
   ]
   // load reflection texture
   const envTexture = await new THREE.CubeTextureLoader().loadAsync([
@@ -119,6 +129,8 @@ const loadDiamonds = async () => {
     // set index on model
     item.model.full.index = i
     item.model.full.color = item.color
+    item.model.full.color_name = item.color_name
+    item.model.full.tween = item.tween
     // create wrap group
     item.wrap = new THREE.Object3D()
     // remove children from model
@@ -129,6 +141,26 @@ const loadDiamonds = async () => {
     item.wrap.add(diamond.top)
     item.wrap.add(diamond.bottom)
     item.wrap.add(diamond.full)
+    // glow model
+    item.model.glow = item.model.full.clone(true)
+    item.model.glow.material = new THREE.MeshPhysicalMaterial({
+      map: textures[items.length + i] || textures[items.length],
+      envMap: envTexture,
+      color: new THREE.Color("#FFFFFF"),
+      metalness: 0,
+      roughness: 0.01,
+      transparent: true,
+      opacity: 0,
+      transmission: 0.3,
+      reflectivity: 1,
+      clearcoat: 1,
+      clearcoatRoughness: 0.05,
+      side: THREE.DoubleSide
+    })
+    item.model.full.glowTween = new Tween()
+    item.glowTween = item.model.full.glowTween
+    item.model.full.glow = item.model.glow
+    item.wrap.add(item.model.glow)
     // add wrap to model
     item.model.add(item.wrap)
     // set initial wrap position
@@ -169,6 +201,7 @@ const onInit = async (setIndex, setSelected) => {
       // update tween
       item.tween.update()
       item.floatTween.update()
+      item.glowTween.update()
     }
     // update galaxy tween
     galaxyTween.update()
@@ -207,6 +240,7 @@ const onInit = async (setIndex, setSelected) => {
       // set diamond index
       setIndex(currentIndex)
     }
+    document.body.style.cursor = "default"
   }, false)
   let hoverObject = null
   // mouse move event
@@ -229,19 +263,37 @@ const onInit = async (setIndex, setSelected) => {
     const result = objects.find(item => item.object.isFullDiamond)
     // return if no result
     if (result) {
-      // get current index
-      const currentIndex = items.length - result.object.index
-      // check index
-      if (simplifyIndex(currentIndex) === stateIndex) {
-        if (hoverObject && hoverObject.color !== result.object) {
-          hoverObject.material.color = new THREE.Color("#FFF")
-        }
-        hoverObject = result.object
-        hoverObject.material.color = new THREE.Color(hoverObject.color)
+      if (hoverObject && hoverObject.color_name !== result.object.color_name) {
+        hoverObject.tween.animateObject(hoverObject.material, { opacity: 1 }, {
+          duration: 100,
+          easing: "out-cubic"
+        })
+        hoverObject.glowTween.animateObject(hoverObject.glow.material, { opacity: 0 }, {
+          duration: 100,
+          easing: "out-cubic"
+        })
       }
+      hoverObject = result.object
+      hoverObject.tween.animateObject(hoverObject.material, { opacity: 0 }, {
+        duration: 100,
+        easing: "out-cubic"
+      })
+      hoverObject.glowTween.animateObject(hoverObject.glow.material, { opacity: 1 }, {
+        duration: 100,
+        easing: "out-cubic"
+      })
+      document.body.style.cursor = "pointer"
     } else if (hoverObject) {
-      hoverObject.material.color = new THREE.Color("#FFF")
+      hoverObject.tween.animateObject(hoverObject.material, { opacity: 1 }, {
+        duration: 100,
+        easing: "out-cubic"
+      })
+      hoverObject.glowTween.animateObject(hoverObject.glow.material, { opacity: 0 }, {
+        duration: 100,
+        easing: "out-cubic"
+      })
       hoverObject = null
+      document.body.style.cursor = "default"
     }
   }, false)
   // initial resize
@@ -337,6 +389,7 @@ const selectDiamond = (index, diamondIndex) => {
     if (i === diamondIndex) {
       // switch to broken diamond
       item.model.full.visible = false
+      item.model.glow.visible = false
       item.model.top.visible = true
       item.model.bottom.visible = true
       // animate broken top part
@@ -377,6 +430,7 @@ const closeDiamond = index => {
     onComplete() {
       // switch to full diamond
       item.model.full.visible = true
+      item.model.glow.visible = true
       item.model.top.visible = false
       item.model.bottom.visible = false
       // reset selected index
