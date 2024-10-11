@@ -14,12 +14,9 @@ export const EventLoader = {
   current: null,
   /** Pointer event listener */
   trigger: event => {
-    // calculate points from pixel ratio
-    const x = event.pageX * window.devicePixelRatio
-    const y = event.pageY * window.devicePixelRatio
     // update mouse vector
-    mouse.x = (x / window.innerWidth) * 2 - 1
-    mouse.y = -(y / window.innerHeight) * 2 + 1
+    mouse.x = (event.pageX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.pageY / window.innerHeight) * 2 + 1
     // set raycaster from camera
     raycaster.setFromCamera(mouse, EventLoader.camera)
     // get intersect result
