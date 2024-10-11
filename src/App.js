@@ -1,5 +1,5 @@
-import "./App.css"
 import Canvas, { useCanvas } from "./components/Canvas"
+import "./App.css"
 
 export default function App() {
   // create canvas context

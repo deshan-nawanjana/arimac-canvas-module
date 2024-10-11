@@ -1,5 +1,4 @@
 import * as THREE from "three"
-import { OrbitControls } from "three/examples/jsm/Addons.js"
 import { color, cos, float, mix, PI2, range, sin, SpriteNodeMaterial, timerLocal, uniform, uv, vec3, vec4, WebGPURenderer } from "three/webgpu"
 
 // create three modules
@@ -10,8 +9,6 @@ const renderer = new WebGPURenderer({ alpha: true })
 camera.position.set(0, 1.99, 8)
 // set camera rotation
 camera.rotation.set(-0.24380, 0, 0)
-
-window.cam = camera
 
 const material = new SpriteNodeMaterial({
   transparent: true,
