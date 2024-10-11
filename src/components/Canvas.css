@@ -1,0 +1,51 @@
+.arimac-web-canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(#FFFFFF, #EDEDED);
+  z-index: -1;
+}
+
+.arimac-web-canvas-source,
+.arimac-web-canvas-galaxy {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+.arimac-web-canvas-galaxy {
+  filter: blur(3px);
+  opacity: 0.2;
+  z-index: 3;
+}
+
+.arimac-web-canvas-source {
+  z-index: 4;
+}
+
+.arimac-web-canvas-patch {
+  position: absolute;
+  height: 102vh;
+  left: calc(48vw - calc(0.5 * 102vh * 1728 / 906));
+  top: -5vh;
+  transition: opacity 0.8s;
+}
+
+.arimac-web-canvas-patch.up {
+  opacity: 0;
+  transform: scaleY(-1);
+  z-index: 1;
+}
+
+.arimac-web-canvas-patch.down {
+  opacity: 1;
+  z-index: 2;
+}
+
+.arimac-web-canvas[data-active="true"] .up {
+  opacity: 1;
+}
+
+.arimac-web-canvas[data-active="true"] .down {
+  opacity: 0;
+}

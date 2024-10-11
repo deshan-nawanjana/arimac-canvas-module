@@ -1,73 +1,55 @@
-import { useState } from "react"
-import Canvas from "./canvas/Canvas"
 import "./App.css"
-
-// diamond count
-const diamondCount = 9
+import Canvas, { useCanvas } from "./components/Canvas"
 
 export default function App() {
-  // module ready state
-  const [ready, setReady] = useState(false)
-  // current diamond index
-  const [index, setIndex] = useState(0)
-  // diamond selected state
-  const [selected, setSelected] = useState(false)
-  // method to next diamond
-  const onNext = () => {
-    setIndex(index === diamondCount - 1 ? 0 : index + 1)
-  }
-  // method to previous diamond
-  const onPrevious = () => {
-    setIndex(index === 0 ? diamondCount - 1 : index - 1)
-  }
-  // wheel event listener
-  const onWheel = event => {
-    // return if not ready or selected
-    if (!ready || selected) { return }
-    // rotate by wheel direction
-    if (event.deltaY < 0) { onNext() } else { onPrevious() }
-  }
-  // key down event listener
-  const onKeyDown = event => {
-    // return if not ready or selected
-    if (!ready || selected) { return }
-    // rotate by key code
-    if (event.key === "PageUp") {
-      onNext()
-    } else if (event.key === "PageDown") {
-      onPrevious()
+  // create canvas context
+  const context = useCanvas()
+  // event for canvas interaction
+  const onEvent = event => {
+    // check event type
+    if (event.type === "wheel") {
+      // add index by wheel direction
+      context.addIndex(event.deltaY < 0 ? 1 : -1)
+    } else if (event.type === "keydown") {
+      if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        // increase index for next section
+        context.addIndex(1)
+      } else if (event.key === "ArrowRight" || event.key === "PageDown") {
+        // decrease index for last section
+        context.addIndex(-1)
+      } else if (event.key === " " && !context.active) {
+        // active currently selected diamond
+        context.setActive(true)
+      } else if (event.key === "Escape" && context.active) {
+        // inactive currently active diamond
+        context.setActive(false)
+      }
     }
   }
+  // app container
   return (
     <div
       className="app-container"
       tabIndex={0}
-      onWheel={onWheel}
-      onKeyDown={onKeyDown}>
-      <Canvas
-        ready={ready}
-        setReady={setReady}
-        index={index}
-        setIndex={setIndex}
-        selected={selected}
-        setSelected={setSelected}
-      />
+      onWheel={onEvent}
+      onKeyDown={onEvent}>
+      <Canvas context={context} />
       <div className="content-container">
         {
-          selected && (
+          context.active && (
             <button
               className="close-button"
-              onClick={() => setSelected(false)}>
+              onClick={() => context.setActive(false)}>
               Close Diamond
             </button>
           )
         }
         <div className="overlay-text">
           {
-            ready ? (
+            context.isReady ? (
               <span>
-                Overlay Text : Index ({index}) {
-                  selected && " + SELECTED"
+                Overlay Text : Index ({context.index}) {
+                  context.active && " + SELECTED"
                 }
               </span>
             ) : "Loading..."
