@@ -1,4 +1,4 @@
-import Canvas, { useCanvas } from "./components/Canvas"
+import Canvas, { useCanvas } from "./canvas/Canvas"
 import "./App.css"
 
 export default function App() {

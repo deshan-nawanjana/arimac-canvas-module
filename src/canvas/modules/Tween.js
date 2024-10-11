@@ -213,6 +213,16 @@ class Tween {
       onComplete: options.onComplete
     })
   }
+  // method to animate multiple objects
+  animateAllObjects(inputs, options = _animateObject) {
+    // for each input
+    for (let i = 0; i < inputs.length; i++) {
+      // current input
+      const input = inputs[i]
+      // animate object
+      this.animateObject(input.target, input.to, options)
+    }
+  }
 }
 
 export { Tween }

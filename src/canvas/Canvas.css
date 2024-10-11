@@ -1,4 +1,4 @@
-.canvas-container {
+.arimac-web-canvas {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -6,51 +6,41 @@
   z-index: -1;
 }
 
-.canvas-container-image {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  transition: opacity 0.8s;
-  background-image: url(./images/patch.png);
-  background-repeat: no-repeat;
-  background-size: auto 102%;
-}
-
-.canvas-container-image.non-flipped {
-  background-position: center 8vh;
-  transform: scale(-1);
-}
-
-.canvas-container-image.flipped {
-  background-position: center -2vh;
-  opacity: 0;
-}
-
-[data-selected="true"] .canvas-container-image.non-flipped {
-  opacity: 0 !important;
-}
-
-
-[data-selected="true"] .canvas-container-image.flipped {
-  opacity: 1 !important;
-}
-
-.canvas-container canvas {
-  position: absolute;
-}
-
-.diamond-canvas {
+.arimac-web-canvas-source,
+.arimac-web-canvas-galaxy {
   position: absolute;
   left: 0px;
   top: 0px;
+}
+
+.arimac-web-canvas-source {
+  z-index: 3;
+}
+
+.arimac-web-canvas-patch {
+  position: absolute;
+  height: 102vh;
+  left: calc(48vw - calc(0.5 * 102vh * 1728 / 906));
+  transition: opacity 0.8s;
+}
+
+.arimac-web-canvas-patch.up {
+  transform: scaleY(-1);
+  top: -5vh;
+  opacity: 0;
   z-index: 1;
 }
 
-.galaxy-canvas {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  z-index: 0;
-  opacity: 0.2;
-  filter: blur(3px);
+.arimac-web-canvas-patch.down {
+  top: -8vh;
+  opacity: 1;
+  z-index: 2;
+}
+
+.arimac-web-canvas[data-active="true"] .up {
+  opacity: 1;
+}
+
+.arimac-web-canvas[data-active="true"] .down {
+  opacity: 0;
 }
