@@ -6,8 +6,8 @@ export default function App() {
   const context = useCanvas()
   // event for canvas interaction
   const onEvent = event => {
-    // return if locked
-    if (context.locked) { return }
+    // return if locked or not ready
+    if (context.locked || !context.isReady) { return }
     // check event type
     if (event.type === "keydown") {
       if (event.key === "ArrowLeft" || event.key === "PageUp") {
