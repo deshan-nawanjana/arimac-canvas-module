@@ -110,7 +110,7 @@ export const useCanvas = () => {
     /** Current item active state */
     active,
     /** Set active state for current item */
-    setActive: state => locked ? null : setActive(state),
+    setActive: state => locked || isScrolling ? null : setActive(state),
     /** Module locked state */
     scroll,
     /** Update scroll details */
@@ -363,6 +363,8 @@ const onResize = () => {
 EventLoader.onClick = object => {
   // return if locked or active
   if (contextData.locked || contextData.active) { return }
+  // return if scrolling
+  if (isScrolling) { return }
   // get diamond outer mesh
   const diamond = object.parent.parent
   // blur diamond
