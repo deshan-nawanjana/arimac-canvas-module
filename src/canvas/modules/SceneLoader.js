@@ -41,21 +41,12 @@ export const SceneLoader = {
       mesh.castShadow = true
       mesh.receiveShadow = true
     }
-    // method to set mesh points
-    const setPoints = (mesh, points) => {
-      // set position
-      mesh.position.set(...Object.values(points.position))
-      // set rotation
-      mesh.rotation.set(...Object.values(points.rotation))
-    }
     // map and return diamonds
     return assets.textures.diamond.map((texture, index) => {
       // create outer model
       const outer = new THREE.Object3D()
       // set initial scale
       outer.scale.set(0.15, 0.15, 0.15)
-      // set initial points
-      setPoints(outer, points.moveable[index])
       // create inner model
       const inner = new THREE.Object3D()
       // add into outer

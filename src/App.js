@@ -6,11 +6,10 @@ export default function App() {
   const context = useCanvas()
   // event for canvas interaction
   const onEvent = event => {
+    // return if locked
+    if (context.locked) { return }
     // check event type
-    if (event.type === "wheel") {
-      // add index by wheel direction
-      context.addIndex(event.deltaY < 0 ? 1 : -1)
-    } else if (event.type === "keydown") {
+    if (event.type === "keydown") {
       if (event.key === "ArrowLeft" || event.key === "PageUp") {
         // increase index for next section
         context.addIndex(1)
@@ -31,7 +30,6 @@ export default function App() {
     <div
       className="app-container"
       tabIndex={0}
-      onWheel={onEvent}
       onKeyDown={onEvent}>
       <Canvas context={context} />
       <div className="content-container">

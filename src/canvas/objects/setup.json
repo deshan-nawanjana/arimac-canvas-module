@@ -9,5 +9,32 @@
     "clearcoat": 1,
     "clearcoatRoughness": 0.05,
     "side": 2
+  },
+  "wheel": {
+    "factor": 0.1,
+    "snapDelay": 300,
+    "stepSize": 200
+  },
+  "ellipse": {
+    "center": {
+      "x": 0,
+      "y": 0
+    },
+    "diameters": {
+      "major": 29,
+      "minor": 6
+    }
+  },
+  "camera": {
+    "position": {
+      "y": 0,
+      "x": -12.320000000000004,
+      "z": 7.710000000000006
+    },
+    "rotation": {
+      "y": 1.1300000000000001,
+      "x": 0,
+      "z": 0
+    }
   }
 }

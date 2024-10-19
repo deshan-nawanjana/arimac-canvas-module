@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-loop-func */
+
 // import packages
 import * as THREE from "three"
 import { useEffect, useRef, useState } from "react"
@@ -13,22 +16,77 @@ import setup from "./objects/setup.json"
 // import style
 import "./Canvas.css"
 
-// helper to simplify index
+/** Simplify diamond index */
 export const toIndex = index => {
   // return index inside array
-  return ((index % 9) + 9) % 9
+  return ((index % 18) + 18) % 18
 }
+
+// helper to calculate ellipse point for diamonds
+function getEllipsePoints(rotation = 0) {
+  // get half diameters
+  const a = setup.ellipse.diameters.major / 2
+  const b = setup.ellipse.diameters.minor / 2
+  // coordinates array
+  const coordinates = []
+  // angle step by diamond count
+  const angleStep = (2 * Math.PI) / diamonds.length
+
+  // covert rotation to radian
+  const rotationRad = (Math.PI / 180) * (rotation + 10)
+  // for each diamond
+  for (let i = 0; i < diamonds.length; i++) {
+    // get current diamond angle
+    const angle = i * angleStep + rotationRad
+    // calculate coordinates
+    const x = setup.ellipse.center.x + a * Math.cos(angle)
+    const z = setup.ellipse.center.y + b * Math.sin(angle)
+    // push to coordinates
+    coordinates.push({ x, z })
+  }
+  // return coordinates
+  return coordinates
+}
+
+// create three modules
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(75, 45, 0.1, 1000)
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+
+// create tween
+const tween = new Tween()
+// diamonds array
+const diamonds = []
+// restore items
+const restores = Array(9).fill(null)
+// context data object
+let contextData = {}
+
+// current scrolling state
+let isScrolling = false
+// current scroll value
+let scrollValue = 0
+// final scrolling value
+let scrollFinal = 0
+// last scroll timeout
+let scrollTimer = null
+// current scroll direction
+let scrollDirection = null
 
 /** Arimac Canvas Context */
 export const useCanvas = () => {
   // current item index
   const [index, setIndex] = useState(0)
+  // current rotation index
+  const [rotation, setRotation] = useState(0)
   // current item active state
   const [active, setActive] = useState(false)
   // module ready state
   const [isReady, setIsReady] = useState(false)
   // module locked state
   const [locked, setLocked] = useState(false)
+  // scroll value
+  const [scroll, setScroll] = useState(0)
   /** Context options */
   return {
     /** Module ready state */
@@ -41,35 +99,224 @@ export const useCanvas = () => {
     setLocked,
     /** Current item index */
     index,
-    /** Directly set item index */
-    setIndex: index => locked || active
-      ? null : setIndex(toIndex(index)),
+    /** Current rotation index */
+    rotation,
     /**
      * Increase or decrease index by given index offset
      * @param {number} offset 
      */
-    addIndex: offset => locked || active
-      ? null : setIndex(toIndex(index + offset)),
+    addIndex: offset => locked || active || !isReady
+      ? null : addScroll(offset * 200 * -1),
     /** Current item active state */
     active,
     /** Set active state for current item */
-    setActive: state => locked ? null : setActive(state)
+    setActive: state => locked ? null : setActive(state),
+    /** Module locked state */
+    scroll,
+    /** Update scroll details */
+    setScroll: (scroll, rotation) => {
+      // update scroll value
+      setScroll(scroll)
+      // update diamond index
+      setIndex(((rotation % 9) + 9) % 9)
+      // update rotation index
+      setRotation(rotation)
+    },
   }
 }
 
-// create three modules
-const scene = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(75, 45, 0.1, 1000)
-const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+/** Wheel event listener */
+const onWheel = event => {
+  // return if busy or active
+  if (!contextData || contextData.active) { return }
+  if (contextData.locked || !contextData.isReady) { return }
+  // include into scroll value
+  scrollValue += event.deltaY
+  // update scroll direction
+  scrollDirection = event.deltaY > 0 ? "down" : "up"
+  // set as scrolling
+  isScrolling = true
+  // rotate diamonds
+  onRotate()
+  // clear current timeout
+  clearTimeout(scrollTimer)
+  // set timeout to snap
+  scrollTimer = setTimeout(() => {
+    // set as not scrolling
+    isScrolling = false
+    // snap to close diamond
+    onSnap()
+  }, setup.wheel.snapDelay)
+}
 
-// create tween
-const tween = new Tween()
-// diamonds array
-const diamonds = []
-// context data object
-const contextData = {}
-// get glow patch url
-const patch = assets.images.patch.source
+const rotX = points.moveable.map(item => item.rotation.x)
+const rotY = points.moveable.map(item => item.rotation.y)
+const rotZ = points.moveable.map(item => item.rotation.z)
+
+// linear interpolation
+function interpolate(array, factor) {
+  factor = Math.max(0, Math.min(factor, 1))
+  const index = factor * (array.length - 1)
+  const lowIndex = Math.floor(index)
+  const highIndex = Math.ceil(index)
+  const t = index - lowIndex
+  return (1 - t) * array[lowIndex] + t * array[highIndex]
+}
+
+// diamond lock points for interpolation
+const locks = [
+  -14.579712418677017,
+  -12.557368354874356,
+  -9.320420340454818,
+  -4.959292078222206,
+  0,
+  4.959292078222206,
+  9.320420340454818,
+  12.557368354874356,
+  14.579712418677017
+]
+
+// get diamond scale by position
+const getScale = point => {
+  const scale = (12.8 - Math.abs(point.x)) * 0.03
+  return scale < 0.06 ? 0.06 : scale
+}
+
+// get diamond rotation by position
+const getRotation = (point) => {
+  // get diamond index position
+  const index = locks.findIndex((_x, i) => (
+    i > 0 && (locks[i - 1] <= point.x && locks[i] >= point.x)
+  ))
+  // calculate interpolate factor
+  const piece = 1 / 9
+  const a = locks[index - 1]
+  const b = locks[index]
+  const gap = b - a
+  const crr = point.x - a
+  const pre = (piece * index + (piece * (crr / gap)) - 0.03)
+  const factor = pre || (point.x < 0 ? 0 : 1)
+  // return interpolated coordinates
+  return ({
+    x: interpolate(rotX, factor),
+    y: interpolate(rotY, factor),
+    z: interpolate(rotZ, factor)
+  })
+}
+
+const onRotate = () => {
+  // return if not scrolling
+  if (!isScrolling) { return }
+  // get ellipse points
+  const points = getEllipsePoints(scrollFinal * 0.1)
+  // for each diamond
+  for (let i = 0; i < diamonds.length; i++) {
+    // current diamond
+    const diamond = diamonds[i]
+    // current point values
+    const point = points[i]
+    // set diamond visibility
+    diamond.visible = point.z > -0.1
+    // set diamond position
+    diamond.position.x = point.x
+    diamond.position.z = point.z
+    const scale = getScale(point)
+    diamond.scale.set(scale, scale, scale)
+    const rotation = getRotation(point)
+    diamond.rotation.y = rotation.y
+    diamond.rotation.x = rotation.x
+    diamond.rotation.z = rotation.z
+  }
+  // update scroll details
+  if (contextData) {
+    const current = toIndex(4 - Math.round(scrollFinal / 200))
+    contextData.setScroll(scrollFinal, current)
+  }
+}
+
+const onSnap = () => {
+  // set step size
+  const step = setup.wheel.stepSize
+  // calculate round up diamond position
+  scrollValue = scrollDirection === "up"
+    ? Math.ceil(scrollValue / step) * step
+    : Math.floor(scrollValue / step) * step
+  // update into final value
+  scrollFinal = scrollValue
+  // update scroll value
+  if (contextData) { contextData.setScroll(scrollFinal) }
+  // get ellipse points
+  const points = getEllipsePoints(scrollValue * 0.1)
+  // for each diamond
+  for (let i = 0; i < diamonds.length; i++) {
+    // current diamond
+    const diamond = diamonds[i]
+    // current point values
+    const point = points[i]
+    // get scale and rotation
+    const scale = getScale(point)
+    const rotation = getRotation(point)
+    // animate diamond position
+    const animation = tween.animateObject(diamond, {
+      position: point,
+      scale: { x: scale, y: scale, z: scale },
+      rotation: rotation
+    }, {
+      easing: 'out-quad',
+      duration: 500,
+      onUpdate(data) {
+        // abort animation if scrolling
+        if (isScrolling) { animation.abort() }
+        // set diamond visibility
+        diamond.visible = data.position.z > -0.1
+      }
+    })
+  }
+  // update scroll details
+  if (contextData) {
+    const current = toIndex(4 - Math.round(scrollFinal / 200))
+    contextData.setScroll(scrollFinal, current)
+  }
+}
+
+const addScroll = offset => {
+  // lock scroll
+  isScrolling = true
+  // return if locked
+  if (contextData.locked) { return }
+  // lock controls
+  contextData.setLocked(true)
+  // tween scroll values
+  tween.animate({
+    from: { scrollValue, scrollFinal },
+    to: {
+      scrollValue: scrollValue + offset,
+      scrollFinal: scrollFinal + offset
+    },
+    easing: 'out-quad',
+    duration: 500,
+    onUpdate(data) {
+      // update scroll values
+      scrollValue = data.scrollValue
+      scrollFinal = data.scrollFinal
+      // animate rotation
+      onRotate()
+      // update scroll details
+      if (contextData) {
+        const current = toIndex(4 - Math.round(scrollFinal / 200))
+        contextData.setScroll(scrollFinal, current)
+      }
+    },
+    onComplete() {
+      // release scroll
+      isScrolling = false
+      // unlock controls
+      contextData.setLocked(false)
+      // snap to close diamond
+      onSnap()
+    }
+  })
+}
 
 /** Initiate canvas module */
 const onInit = async () => {
@@ -83,10 +330,17 @@ const onInit = async () => {
   EventLoader.objects = diamonds.map(item => item.meshes.idle)
   // set camera on event loader
   EventLoader.camera = camera
+  // set camera position
+  camera.position.set(...Object.values(setup.camera.position))
+  camera.rotation.set(...Object.values(setup.camera.rotation))
   // load models into scene
   scene.add(...diamonds)
   // animate scene
   renderer.setAnimationLoop(() => {
+    // update final scroll value
+    scrollFinal += (scrollValue - scrollFinal) * setup.wheel.factor
+    // update diamond rotations
+    onRotate()
     // update tween
     tween.update()
     // render scene
@@ -103,39 +357,50 @@ const onResize = () => {
   camera.aspect = width / height
   camera.updateProjectionMatrix()
   renderer.setSize(width, height)
-  // update camera position by width
-  camera.position.z = 5.4
 }
 
 /** Click callback event */
 EventLoader.onClick = object => {
+  // return if locked or active
+  if (contextData.locked || contextData.active) { return }
   // get diamond outer mesh
   const diamond = object.parent.parent
-  // get current index
-  const index = toIndex(diamonds.length - diamond.index)
   // blur diamond
   EventLoader.onBlur(diamond.meshes.idle)
-  // check with current index
-  if (index === contextData.index) {
+  // check diamond position
+  if (diamond.index === contextData.rotation) {
     // active diamond
     contextData.setActive(true)
   } else {
-    // select diamond
-    contextData.setIndex(diamonds.length - diamond.index)
+    // get diamond index offset
+    const offset = diamond.index - contextData.rotation
+    // animate to scroll point
+    if (Math.abs(offset) <= 4) {
+      addScroll(offset * 200 * -1)
+    } else if (offset > 0) {
+      addScroll((offset - 18) * 200 * -1)
+    } else {
+      addScroll((offset + 18) * 200 * -1)
+    }
   }
 }
+
+// current glow state
+let isGlowing = false
 
 /** Focus callback event */
 EventLoader.onFocus = object => {
   // return if locked or active
   if (contextData.active || contextData.locked) { return }
+  // return if glowing
+  if (isGlowing) { return } else { isGlowing = true }
   // update cursor
   document.body.style.cursor = "pointer"
   // get diamond meshes
   const meshes = object.parent.parent.meshes
   // scale up diamond
   tween.animateAllObjects([
-    { target: meshes.outer, to: points.hover.focus },
+    { target: meshes.inner, to: points.hover.focus },
     { target: meshes.idle.material, to: { opacity: 0 } },
     { target: meshes.glow.material, to: { opacity: 1 } }
   ], {
@@ -146,13 +411,15 @@ EventLoader.onFocus = object => {
 
 /** Focus callback event */
 EventLoader.onBlur = object => {
+  // reset glowing state
+  isGlowing = false
   // get diamond meshes
   const meshes = object.parent.parent.meshes
   // update cursor
-  document.body.style.cursor = "default"
+  document.body.style.cursor = ""
   // scale up diamond
   tween.animateAllObjects([
-    { target: meshes.outer, to: points.hover.blur },
+    { target: meshes.inner, to: points.hover.blur },
     { target: meshes.idle.material, to: { opacity: 1 } },
     { target: meshes.glow.material, to: { opacity: 0 } }
   ], {
@@ -175,40 +442,10 @@ const onFloat = () => {
   }
   // for each item
   for (let i = 0; i < diamonds.length; i++) {
-    // get diamond index
-    const index = toIndex(i - 4)
     // current item
     setTimeout(() => {
-      float(diamonds[index].meshes.inner)
-    }, i * 300)
-  }
-}
-
-/** Select diamond from moveable space */
-const selectDiamond = context => {
-  // return if not ready
-  if (!context || !context.isReady) { return }
-  // return if locked or active
-  if (context.active || context.locked) { return }
-  // for each diamond
-  for (let i = 0; i < diamonds.length; i++) {
-    // current diamond
-    const diamond = diamonds[i]
-    // get coords by shifted index
-    const shift = toIndex(context.index + i)
-    const coord = points.moveable[shift]
-    // animate model
-    tween.animateObject(diamond, coord, {
-      duration: 800,
-      easing: 'out-cubic',
-      onUpdate() {
-        // get object position
-        const posX = diamond.position.x
-        const posZ = diamond.position.z
-        // change visibility by position
-        diamond.visible = !(posZ < -34 && (posX < 38 && posX > -38))
-      }
-    })
+      float(diamonds[i].meshes.inner)
+    }, i * 350)
   }
 }
 
@@ -218,62 +455,88 @@ const activeDiamond = context => {
   if (!context || !context.isReady) { return }
   // set locked state
   context.setLocked(true)
-  // get current index
-  const currentIndex = toIndex(diamonds.length - context.index)
-  // for each item
-  for (let i = 0; i < diamonds.length; i++) {
-    // current diamond
-    const diamond = diamonds[i]
-    // get shifted index
-    const shift = toIndex(context.index + i)
-    // select coord by active state
-    const coord = context.active
-      ? points.selected[shift]
-      : points.moveable[shift]
-    // check if selected diamond
-    if (i === currentIndex) {
-      // get diamond meshes
-      const meshes = diamond.meshes
-      // switch by active state
-      if (context.active) {
-        // switch to broken diamond
-        meshes.idle.visible = false
-        meshes.glow.visible = false
-        meshes.top.visible = true
-        meshes.bottom.visible = true
-        // animate broken pieces
-        tween.animateAllObjects([
-          { target: meshes.top, to: points.broken.top },
-          { target: meshes.bottom, to: points.broken.bottom }
-        ], {
-          duration: 800,
-          easing: 'out-cubic'
-        })
-      } else {
-        // animate objects
-        tween.animateAllObjects([
-          { target: meshes.top, to: points.broken.reset },
-          { target: meshes.bottom, to: points.broken.reset }
-        ], {
-          duration: 800,
-          easing: 'out-cubic',
-          onComplete() {
-            // switch to full diamond
-            meshes.idle.visible = true
-            meshes.glow.visible = true
-            meshes.top.visible = false
-            meshes.bottom.visible = false
+  // switch by active state
+  if (context.active) {
+    // for each diamond
+    for (let i = 0; i < 9; i++) {
+      // get current diamond index
+      const index = toIndex(context.rotation + (i < 4 ? 4 - i : i > 4 ? 4 - i : 0))
+      // get diamond by index
+      const diamond = diamonds[index]
+      // set restore data
+      restores[i] = {
+        index,
+        points: {
+          position: {
+            x: diamond.position.x,
+            y: diamond.position.y,
+            z: diamond.position.z
+          },
+          rotation: {
+            x: diamond.rotation.x,
+            y: diamond.rotation.y,
+            z: diamond.rotation.z
           }
-        })
+        }
       }
-    } else {
-      // animate diamond curve
-      tween.animateObject(diamond, coord, {
+    }
+    // for each diamond
+    for (let i = 0; i < restores.length; i++) {
+      // current diamond
+      const diamond = diamonds[restores[i].index]
+      // animate diamond position
+      tween.animateObject(diamond, points.selected[i], {
         duration: 800,
-        easing: 'out-cubic',
-        onComplete() { context.setLocked(false) }
+        easing: 'out-cubic'
       })
     }
+    // get active diamond meshes
+    const meshes = diamonds[restores[4].index].meshes
+    // switch to broken diamond
+    meshes.idle.visible = false
+    meshes.glow.visible = false
+    meshes.top.visible = true
+    meshes.bottom.visible = true
+    // animate broken pieces opening
+    tween.animateAllObjects([
+      { target: meshes.top, to: points.broken.top },
+      { target: meshes.bottom, to: points.broken.bottom }
+    ], {
+      duration: 800,
+      easing: 'out-cubic',
+      onComplete() {
+        context.setLocked(false)
+      }
+    })
+  } else {
+    // for each current diamond
+    for (let i = 0; i < restores.length; i++) {
+      // current diamond
+      const diamond = diamonds[restores[i].index]
+      // animate diamond position
+      tween.animateObject(diamond, restores[i].points, {
+        duration: 800,
+        easing: 'out-cubic'
+      })
+    }
+    // get active diamond meshes
+    const meshes = diamonds[restores[4].index].meshes
+    // animate broken diamond pieces closing
+    tween.animateAllObjects([
+      { target: meshes.top, to: points.broken.reset },
+      { target: meshes.bottom, to: points.broken.reset }
+    ], {
+      duration: 800,
+      easing: 'out-cubic',
+      onComplete() {
+        // switch to full diamond
+        meshes.idle.visible = true
+        meshes.glow.visible = true
+        meshes.top.visible = false
+        meshes.bottom.visible = false
+        context.setLocked(false)
+      }
+    })
   }
 }
 
@@ -293,7 +556,10 @@ export default function Canvas({ context }) {
       onResize()
       // initial float
       onFloat()
+      // initial positions
+      onSnap()
       // add event listeners
+      window.addEventListener("wheel", onWheel)
       window.addEventListener("resize", onResize)
       window.addEventListener("click", EventLoader.trigger)
       window.addEventListener("mousemove", EventLoader.trigger)
@@ -308,22 +574,22 @@ export default function Canvas({ context }) {
     })
     return () => {
       // remove event listeners
+      window.removeEventListener("wheel", onWheel)
       window.removeEventListener("resize", onResize)
       window.removeEventListener("click", EventLoader.trigger)
       window.removeEventListener("mousemove", EventLoader.trigger)
     }
   }, [])
-  // effect on index change
-  useEffect(() => selectDiamond(context), [context.index])
   // effect on active change
   useEffect(() => activeDiamond(context), [context.active])
   // effect on context change
-  useEffect(() => { Object.assign(contextData, context) }, [context])
+  useEffect(() => { contextData = context }, [context])
   // container dom
   return (
     <div className="arimac-web-canvas" data-active={context.active}>
-      <img src={patch} className="arimac-web-canvas-patch up" />
-      <img src={patch} className="arimac-web-canvas-patch down" />
+      <div className="arimac-web-canvas-patch up" />
+      <div className="arimac-web-canvas-patch down" />
+      <div className="arimac-web-canvas-blur" />
     </div>
   )
 }

@@ -2,37 +2,118 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: radial-gradient(#FFFFFF, #EDEDED);
+  background-image: url(./images/background.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   z-index: -1;
 }
 
-.arimac-web-canvas-source,
-.arimac-web-canvas-galaxy {
+.arimac-web-canvas-source {
+  background-size: auto 100%;
+  background-position: center;
   position: absolute;
   left: 0px;
   top: 0px;
+  z-index: 3;
 }
 
-.arimac-web-canvas-source {
-  z-index: 3;
+.arimac-web-canvas-blur {
+  top: 0;
+  left: 0;
+  position: fixed;
+  z-index: 100;
+  height: 100vh;
+  width: 100vw;
+  -webkit-mask: radial-gradient(circle, #0000 390px, rgba(0, 0, 0, 1) 130px);
+  mask: radial-gradient(circle, #0000 390px, rgba(0, 0, 0, 1) 130px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.arimac-web-canvas[data-active="true"] .arimac-web-canvas-blur {
+  opacity: 1;
 }
 
 .arimac-web-canvas-patch {
   position: absolute;
-  height: 102vh;
-  left: calc(48vw - calc(0.5 * 102vh * 1728 / 906));
-  transition: opacity 0.8s;
+  height: 100vh;
+  width: 100vw;
+  left: 0px;
+  top: 0px;
+  background-image:
+    url(./images/caustic_1.png),
+    url(./images/caustic_2.png),
+    url(./images/caustic_3.png),
+    url(./images/caustic_4.png);
+  background-repeat: no-repeat;
+  background-size:
+    auto 100%,
+    auto 100%,
+    auto 100%,
+    auto 100%;
+  background-position:
+    center,
+    center,
+    center,
+    center;
+  animation-name: arimac-web-canvas-patch-glow;
+  animation-duration: 2.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes arimac-web-canvas-patch-glow {
+  0% {
+    background-size:
+      auto 100%,
+      auto 100%,
+      auto 100%,
+      auto 100%;
+  }
+
+  25% {
+    background-size:
+      auto 80%,
+      auto 115%,
+      auto 110%,
+      auto 85%;
+  }
+
+  50% {
+    background-size:
+      auto 115%,
+      auto 80%,
+      auto 85%,
+      auto 115%;
+  }
+
+  50% {
+    background-size:
+      auto 115%,
+      auto 120%,
+      auto 85%,
+      auto 115%;
+  }
+
+  100% {
+    background-size:
+      auto 100%,
+      auto 100%,
+      auto 100%,
+      auto 100%;
+  }
 }
 
 .arimac-web-canvas-patch.up {
   transform: scaleY(-1);
-  top: -5vh;
+  top: -14vh;
   opacity: 0;
   z-index: 1;
 }
 
 .arimac-web-canvas-patch.down {
-  top: -8vh;
   opacity: 1;
   z-index: 2;
 }

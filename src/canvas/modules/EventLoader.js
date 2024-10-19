@@ -19,8 +19,12 @@ export const EventLoader = {
     mouse.y = -(event.pageY / window.innerHeight) * 2 + 1
     // set raycaster from camera
     raycaster.setFromCamera(mouse, EventLoader.camera)
+    // filter visible object
+    const objects = EventLoader.objects.filter(item => (
+      item.parent.parent.visible
+    ))
     // get intersect result
-    const result = raycaster.intersectObjects(EventLoader.objects)[0]
+    const result = raycaster.intersectObjects(objects)[0]
     // return if no results
     if (result) {
       // get object
@@ -41,9 +45,9 @@ export const EventLoader = {
           EventLoader.onBlur(EventLoader.current)
           // get current object
           EventLoader.current = object
-          // callback focus event
-          EventLoader.onFocus(object)
         }
+        // callback focus event
+        EventLoader.onFocus(object)
       }
     } else if (!result && EventLoader.current) {
       // callback focus event

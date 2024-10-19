@@ -113,14 +113,14 @@ class Tween {
     // animation queue
     this.queue = []
     // time stamp
-    this.stamp = Date.now()
+    this.stamp = performance.now()
   }
   // method to update
   update() {
     // update time stamp
-    this.stamp = Date.now()
-    // filter completed items
-    this.queue = this.queue.filter(item => !item.completed)
+    this.stamp = performance.now()
+    // filter completed and aborted items
+    this.queue = this.queue.filter(item => !item.completed && !item.aborted)
     // for each item in queue
     for (let i = 0; i < this.queue.length; i++) {
       // current item
@@ -170,7 +170,7 @@ class Tween {
     // clone current states
     input.current = getObjectValues(input.from, input.to)
     // set time stamp
-    input.stamp = Date.now()
+    input.stamp = performance.now()
     // default easing
     if (typeof input.easing !== 'string') { input.easing = 'out-sine' }
     // default callbacks
@@ -183,13 +183,19 @@ class Tween {
     input.onUpdate(Object.assign({}, input.from))
     // push to queue
     this.queue.push(input)
+    // return methods object
+    return ({
+      abort() {
+        input.aborted = true
+      }
+    })
   }
   // method to animate object
   animateObject(target, to = {}, options = _animateObject) {
     // get target source
     const source = target.source || target
     // animate object
-    this.animate({
+    return this.animate({
       // get from states
       from: getObjectValues(source, to),
       // to states
@@ -214,14 +220,10 @@ class Tween {
     })
   }
   // method to animate multiple objects
-  animateAllObjects(inputs, options = _animateObject) {
-    // for each input
-    for (let i = 0; i < inputs.length; i++) {
-      // current input
-      const input = inputs[i]
-      // animate object
+  animateAllObjects(inputs = [], options = _animateObject) {
+    return inputs.map(input => (
       this.animateObject(input.target, input.to, options)
-    }
+    ))
   }
 }
 
