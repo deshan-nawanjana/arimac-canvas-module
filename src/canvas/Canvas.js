@@ -31,7 +31,6 @@ function getEllipsePoints(rotation = 0) {
   const coordinates = []
   // angle step by diamond count
   const angleStep = (2 * Math.PI) / diamonds.length
-
   // covert rotation to radian
   const rotationRad = (Math.PI / 180) * (rotation + 10)
   // for each diamond
@@ -64,10 +63,12 @@ let contextData = {}
 
 // current scrolling state
 let isScrolling = false
+// current snapping state
+let isSnapping = false
 // current scroll value
-let scrollValue = 0
+let scrollValue = 1000
 // final scrolling value
-let scrollFinal = 0
+let scrollFinal = 1000
 // last scroll timeout
 let scrollTimer = null
 // current scroll direction
@@ -78,7 +79,7 @@ export const useCanvas = () => {
   // current item index
   const [index, setIndex] = useState(0)
   // current rotation index
-  const [rotation, setRotation] = useState(0)
+  const [rotation, setRotation] = useState(17)
   // current item active state
   const [active, setActive] = useState(false)
   // module ready state
@@ -86,7 +87,7 @@ export const useCanvas = () => {
   // module locked state
   const [locked, setLocked] = useState(false)
   // scroll value
-  const [scroll, setScroll] = useState(0)
+  const [scroll, setScroll] = useState(1000)
   /** Context options */
   return {
     /** Module ready state */
@@ -106,11 +107,12 @@ export const useCanvas = () => {
      * @param {number} offset 
      */
     addIndex: offset => locked || active || !isReady
-      ? null : addScroll(offset * 200 * -1),
+      ? null : onWheel({ deltaY: offset * 200 * -1 }),
     /** Current item active state */
     active,
     /** Set active state for current item */
-    setActive: state => locked || isScrolling ? null : setActive(state),
+    setActive: state => locked || isScrolling || isSnapping
+      ? null : setActive(state),
     /** Module locked state */
     scroll,
     /** Update scroll details */
@@ -235,6 +237,8 @@ const onRotate = () => {
 }
 
 const onSnap = () => {
+  // start snap
+  isSnapping = true
   // set step size
   const step = setup.wheel.stepSize
   // calculate round up diamond position
@@ -269,6 +273,10 @@ const onSnap = () => {
         if (isScrolling) { animation.abort() }
         // set diamond visibility
         diamond.visible = data.position.z > -0.1
+      },
+      onComplete() {
+        // reset snap state
+        isSnapping = false
       }
     })
   }
