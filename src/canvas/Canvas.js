@@ -550,6 +550,19 @@ const activeDiamond = context => {
   }
 }
 
+// background style
+const backgroundStyle = {
+  backgroundImage: `url(./assets/images/background.png)`
+}
+// caustics style
+const causticsStyle = {
+  backgroundImage: `
+    url(./assets/images/caustic_1.png),
+    url(./assets/images/caustic_2.png),
+    url(./assets/images/caustic_3.png),
+    url(./assets/images/caustic_4.png)`
+}
+
 /** Arimac canvas component */
 export default function Canvas({ context }) {
   // initiated reference
@@ -596,9 +609,18 @@ export default function Canvas({ context }) {
   useEffect(() => { contextData = context }, [context])
   // container dom
   return (
-    <div className="arimac-web-canvas" data-active={context.active}>
-      <div className="arimac-web-canvas-patch up" />
-      <div className="arimac-web-canvas-patch down" />
+    <div
+      className="arimac-web-canvas"
+      data-active={context.active}
+      style={backgroundStyle}>
+      <div
+        className="arimac-web-canvas-caustics up"
+        style={causticsStyle}
+      />
+      <div
+        className="arimac-web-canvas-caustics down"
+        style={causticsStyle}
+      />
       <div className="arimac-web-canvas-blur" />
     </div>
   )

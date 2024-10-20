@@ -1,25 +1,36 @@
-import { TextureLoader } from "three"
+import { CanvasTexture } from "three"
+
+// cache images
+const cacheImages = {}
 
 export const HueLoader = {
-  /** Texture loader */
-  loader: new TextureLoader(),
   /** Load image with hue rotation */
   loadAsync(input) {
     return new Promise(resolve => {
       // get source and rotation from input
       const source = input.split("#")[0]
       const rotation = parseInt(input.split("#")[1] || 0)
-      // create image
-      const image = new Image()
-      // load event listener
-      image.addEventListener("load", async () => {
+      // create or get cached image
+      const image = cacheImages[source] || new Image()
+      // load callback
+      const onLoad = () => {
+        // store image in cache
+        cacheImages[source] = image
         // create hue rotated canvas
         const canvas = this.createCanvas(image, rotation)
         // resolve as texture
-        resolve(await this.loader.loadAsync(canvas.toDataURL()))
-      })
-      // set source to load
-      image.src = source
+        resolve(new CanvasTexture(canvas))
+      }
+      // find cache image
+      if (source in cacheImages) {
+        // load from cache
+        onLoad()
+      } else {
+        // add event listener
+        image.addEventListener("load", onLoad)
+        // set image source to load
+        image.src = source
+      }
     })
   },
   /**
@@ -86,6 +97,9 @@ export const HueLoader = {
         }
         case b: {
           h = (r - g) / d + 4
+          break
+        }
+        default: {
           break
         }
       }
