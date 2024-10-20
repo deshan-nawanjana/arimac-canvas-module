@@ -120,7 +120,7 @@ export const useCanvas = () => {
       // update scroll value
       setScroll(scroll)
       // update diamond index
-      setIndex(((rotation % 9) + 9) % 9)
+      setIndex(8 - (((rotation % 9) + 9) % 9))
       // update rotation index
       setRotation(rotation)
     },
@@ -333,7 +333,7 @@ const onInit = async () => {
   // load lights into scene
   scene.add(...SceneLoader.loadLights())
   // append diamonds into array
-  diamonds.push(...SceneLoader.loadModels(assets, points, setup))
+  diamonds.push(...SceneLoader.loadModels(assets, setup))
   // set event loader objects
   EventLoader.objects = diamonds.map(item => item.meshes.idle)
   // set camera on event loader

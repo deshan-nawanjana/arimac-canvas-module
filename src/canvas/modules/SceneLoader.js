@@ -1,7 +1,4 @@
 import * as THREE from "three"
-import assets from "../objects/assets.json"
-import points from "../objects/points.json"
-import setup from "../objects/setup.json"
 
 // helper to apply material into model
 
@@ -17,13 +14,8 @@ export const SceneLoader = {
     // return all lights
     return [ambient, directional]
   },
-  /**
-   * Load models with updated meshes and textures
-   * @param {assets} assets 
-   * @param {points} points 
-   * @param {setup} setup 
-   */
-  loadModels(assets, points, setup) {
+  /** Load models with updated meshes and textures */
+  loadModels(assets, setup) {
     // get diamond model
     const diamond = assets.models.diamond
     // get reflection texture
