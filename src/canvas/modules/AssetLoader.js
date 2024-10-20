@@ -1,5 +1,6 @@
 import { CubeTextureLoader, ImageLoader, TextureLoader } from "three"
 import { FBXLoader } from "three/examples/jsm/Addons.js"
+import { HueLoader } from "./HueLoader"
 
 export const AssetLoader = {
   /** Loader modules */
@@ -7,7 +8,8 @@ export const AssetLoader = {
     FBXLoader: new FBXLoader(),
     TextureLoader: new TextureLoader(),
     CubeTextureLoader: new CubeTextureLoader(),
-    ImageLoader: new ImageLoader()
+    ImageLoader: new ImageLoader(),
+    HueLoader
   },
   /** Load single asset */
   async load(asset) {

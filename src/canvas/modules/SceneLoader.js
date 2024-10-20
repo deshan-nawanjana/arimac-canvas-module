@@ -1,7 +1,5 @@
 import * as THREE from "three"
 
-// helper to apply material into model
-
 export const SceneLoader = {
   /** Load all light systems */
   loadLights() {
