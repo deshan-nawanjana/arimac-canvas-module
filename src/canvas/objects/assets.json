@@ -20,56 +20,6 @@
     "diamond": [
       {
         "idle": {
-          "source": "./assets/textures/diamond_5.png",
-          "loader": "TextureLoader"
-        },
-        "glow": {
-          "source": "./assets/textures/diamond_5_glow.png",
-          "loader": "TextureLoader"
-        }
-      },
-      {
-        "idle": {
-          "source": "./assets/textures/diamond_4.png",
-          "loader": "TextureLoader"
-        },
-        "glow": {
-          "source": "./assets/textures/diamond_4_glow.png",
-          "loader": "TextureLoader"
-        }
-      },
-      {
-        "idle": {
-          "source": "./assets/textures/diamond_3.png",
-          "loader": "TextureLoader"
-        },
-        "glow": {
-          "source": "./assets/textures/diamond_3_glow.png",
-          "loader": "TextureLoader"
-        }
-      },
-      {
-        "idle": {
-          "source": "./assets/textures/diamond_2.png",
-          "loader": "TextureLoader"
-        },
-        "glow": {
-          "source": "./assets/textures/diamond_2_glow.png",
-          "loader": "TextureLoader"
-        }
-      },
-      {
-        "idle": {
-          "source": "./assets/textures/diamond_1.png",
-          "loader": "TextureLoader"
-        },
-        "glow": {
-          "source": "./assets/textures/diamond_1_glow.png",
-          "loader": "TextureLoader"
-        }
-      },
-      {
-        "idle": {
           "source": "./assets/textures/diamond_9.png",
           "loader": "TextureLoader"
         },
@@ -195,6 +145,56 @@
         },
         "glow": {
           "source": "./assets/textures/diamond_6_glow.png",
+          "loader": "TextureLoader"
+        }
+      },
+      {
+        "idle": {
+          "source": "./assets/textures/diamond_5.png",
+          "loader": "TextureLoader"
+        },
+        "glow": {
+          "source": "./assets/textures/diamond_5_glow.png",
+          "loader": "TextureLoader"
+        }
+      },
+      {
+        "idle": {
+          "source": "./assets/textures/diamond_4.png",
+          "loader": "TextureLoader"
+        },
+        "glow": {
+          "source": "./assets/textures/diamond_4_glow.png",
+          "loader": "TextureLoader"
+        }
+      },
+      {
+        "idle": {
+          "source": "./assets/textures/diamond_3.png",
+          "loader": "TextureLoader"
+        },
+        "glow": {
+          "source": "./assets/textures/diamond_3_glow.png",
+          "loader": "TextureLoader"
+        }
+      },
+      {
+        "idle": {
+          "source": "./assets/textures/diamond_2.png",
+          "loader": "TextureLoader"
+        },
+        "glow": {
+          "source": "./assets/textures/diamond_2_glow.png",
+          "loader": "TextureLoader"
+        }
+      },
+      {
+        "idle": {
+          "source": "./assets/textures/diamond_1.png",
+          "loader": "TextureLoader"
+        },
+        "glow": {
+          "source": "./assets/textures/diamond_1_glow.png",
           "loader": "TextureLoader"
         }
       }
