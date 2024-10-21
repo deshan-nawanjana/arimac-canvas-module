@@ -30,81 +30,81 @@
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-103",
+          "source": "./assets/textures/diamond.png#60",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-103",
+          "source": "./assets/textures/diamond_glow.png#60",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-62",
+          "source": "./assets/textures/diamond.png#100",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-62",
+          "source": "./assets/textures/diamond_glow.png#100",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-14",
+          "source": "./assets/textures/diamond.png#140",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-14",
+          "source": "./assets/textures/diamond_glow.png#140",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#65",
+          "source": "./assets/textures/diamond.png#-180",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#65",
+          "source": "./assets/textures/diamond_glow.png#-180",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#96",
+          "source": "./assets/textures/diamond.png#-160",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#96",
+          "source": "./assets/textures/diamond_glow.png#-160",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#172",
+          "source": "./assets/textures/diamond.png#-110",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#172",
+          "source": "./assets/textures/diamond_glow.png#-110",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#128",
+          "source": "./assets/textures/diamond.png#-80",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#128",
+          "source": "./assets/textures/diamond_glow.png#-80",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-142",
+          "source": "./assets/textures/diamond.png#-50",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-142",
+          "source": "./assets/textures/diamond_glow.png#-50",
           "loader": "HueLoader"
         }
       },
@@ -120,81 +120,81 @@
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-103",
+          "source": "./assets/textures/diamond.png#60",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-103",
+          "source": "./assets/textures/diamond_glow.png#60",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-62",
+          "source": "./assets/textures/diamond.png#100",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-62",
+          "source": "./assets/textures/diamond_glow.png#100",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-142",
+          "source": "./assets/textures/diamond.png#140",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-142",
+          "source": "./assets/textures/diamond_glow.png#140",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#65",
+          "source": "./assets/textures/diamond.png#-180",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#65",
+          "source": "./assets/textures/diamond_glow.png#-180",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#96",
+          "source": "./assets/textures/diamond.png#-160",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#96",
+          "source": "./assets/textures/diamond_glow.png#-160",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#172",
+          "source": "./assets/textures/diamond.png#-110",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#172",
+          "source": "./assets/textures/diamond_glow.png#-110",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#128",
+          "source": "./assets/textures/diamond.png#-80",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#128",
+          "source": "./assets/textures/diamond_glow.png#-80",
           "loader": "HueLoader"
         }
       },
       {
         "idle": {
-          "source": "./assets/textures/diamond.png#-142",
+          "source": "./assets/textures/diamond.png#-50",
           "loader": "HueLoader"
         },
         "glow": {
-          "source": "./assets/textures/diamond_glow.png#-142",
+          "source": "./assets/textures/diamond_glow.png#-50",
           "loader": "HueLoader"
         }
       }
